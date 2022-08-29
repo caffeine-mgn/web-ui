@@ -1,20 +1,50 @@
 package pw.binom.web
 
+import kotlinx.browser.window
 import org.w3c.dom.Element
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
 abstract class AbstractComponent<T : Element> : Component<T> {
     protected fun afterConstruct() {
-        dom.asDynamic().COMPONENT = this
+        Component.setComponent(dom, this)
     }
 
+    init {
+        val self = this
+        window.setTimeout({ self.afterConstruct() }, 0)
+    }
+
+    protected var isStarted = false
+        private set
     private var firstStart = true
 
     protected fun <R> init(func: suspend () -> R): ReadOnlyProperty<AbstractComponent<T>, R> {
         val delegator = InitVariable<T, R>(func)
-        initVars += delegator
+        initFunc += { delegator.init() }
         return delegator
+    }
+
+    protected fun <T : Component<*>> T.asParent(): T {
+        this@AbstractComponent.onStart {
+            this@asParent.onStart()
+        }
+        this@AbstractComponent.onStop {
+            this@asParent.onStop()
+        }
+        return this
+    }
+
+    protected fun onInit(func: suspend () -> Unit) {
+        initFunc += func
+    }
+
+    protected fun onStart(func: suspend () -> Unit) {
+        startFunc += func
+    }
+
+    protected fun onStop(func: suspend () -> Unit) {
+        stopFunc += func
     }
 
     private inner class InitVariable<T : Element, R>(val valueProvider: suspend () -> R) :
@@ -26,25 +56,35 @@ abstract class AbstractComponent<T : Element> : Component<T> {
 
         override fun getValue(thisRef: AbstractComponent<T>, property: KProperty<*>): R {
             if (firstStart) {
-                throw IllegalStateException("Variable will initialized on first component start")
+                throw IllegalStateException("Variable ${thisRef::class}::\"${property.name}\" will initialized on first component start")
             }
             return value as R
         }
     }
 
-    private val initVars = ArrayList<InitVariable<T, out Any?>>()
+    private val initFunc = ArrayList<suspend () -> Unit>()
+    private val startFunc = ArrayList<suspend () -> Unit>()
+    private val stopFunc = ArrayList<suspend () -> Unit>()
 
     override suspend fun onStart() {
+        isStarted = true
         if (firstStart) {
             firstStart = false
             onInit()
-            initVars.forEach {
-                it.init()
+            initFunc.forEach {
+                it()
             }
+        }
+        startFunc.forEach {
+            it()
         }
     }
 
     override suspend fun onStop() {
+        stopFunc.forEach {
+            it()
+        }
+        isStarted = false
     }
 
     protected open suspend fun onInit() {

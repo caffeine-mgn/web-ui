@@ -7,6 +7,7 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.css.CSSStyleDeclaration
 import org.w3c.dom.get
 import pw.binom.web.Component
+import pw.binom.web.FlexDiv2
 
 class FlexLayout<T : HTMLElement>(
     parent: T,
@@ -37,10 +38,6 @@ class FlexLayout<T : HTMLElement>(
     override suspend fun onStop() {
         started = false
         Component.callOnStop(dom)
-        (0 until dom.childNodes.length)
-            .mapNotNull { dom.childNodes[it] }
-            .mapNotNull { it.asDynamic().COMPONENT.unsafeCast<Component<*>?>() }
-            .forEach { it.onStop() }
     }
 
     override val dom: T
@@ -61,7 +58,9 @@ class FlexLayout<T : HTMLElement>(
 
         fun div(listener: (FlexLayout<HTMLDivElement>.() -> Unit)? = null): FlexLayout<HTMLDivElement> {
             val element = document.createElement("div").unsafeCast<HTMLDivElement>()
+//            val element = FlexDiv2()
             val g = FlexLayout(element)
+            Component.setComponent(element, g)
             if (listener != null) {
                 g.listener()
             }
@@ -166,11 +165,18 @@ class FlexLayout<T : HTMLElement>(
         }
     }
 
-    suspend fun <T : HTMLElement> addFirst(element: T, control: (FlexItem.() -> Unit)? = null): T =
+    fun <T : HTMLElement> addFirst(element: T, control: (FlexItem.() -> Unit)? = null): T =
         if (parent.childElementCount == 0) {
             add(element = element, control = control)
         } else {
             addBefore(element = element, before = parent.children.get(0) as HTMLElement, control = control)
+        }
+
+    suspend fun <T : HTMLElement> addFirstAndStart(element: T, control: (FlexItem.() -> Unit)? = null): T =
+        if (parent.childElementCount == 0) {
+            addAndStart(element = element, control = control)
+        } else {
+            addBeforeAndStart(element = element, before = parent.children.get(0) as HTMLElement, control = control)
         }
 
     private suspend fun callStart(element: Element) {
@@ -185,45 +191,81 @@ class FlexLayout<T : HTMLElement>(
         com.onStop()
     }
 
-    suspend fun <T : Element> add(element: T, control: (FlexItem.() -> Unit)? = null): T {
+    fun <T : Element> add(element: T, control: (FlexItem.() -> Unit)? = null): T {
         prepareElement(element, control)
         parent.appendChild(element)
+        return element
+    }
+
+    suspend fun <T : Element> addAndStart(element: T, control: (FlexItem.() -> Unit)? = null): T {
+        add(element = element, control = control)
         if (started) {
             callStart(element)
         }
         return element
     }
 
-    suspend fun <T : HTMLElement> addBefore(
+    fun <T : HTMLElement> addBefore(
         element: T,
         before: HTMLElement,
         control: (FlexItem.() -> Unit)? = null
     ): T {
         prepareElement(element, control)
         parent.insertBefore(node = element, child = before)
+        return element
+    }
+
+    suspend fun <T : HTMLElement> addBeforeAndStart(
+        element: T,
+        before: HTMLElement,
+        control: (FlexItem.() -> Unit)? = null
+    ): T {
+        addBefore(
+            element = element,
+            before = before,
+            control = control
+        )
         if (started) {
             callStart(element)
         }
         return element
     }
 
-    suspend fun <T : HTMLElement> addAfter(element: T, after: HTMLElement, control: (FlexItem.() -> Unit)? = null): T {
+    fun <T : HTMLElement> addAfter(element: T, after: HTMLElement, control: (FlexItem.() -> Unit)? = null): T {
         prepareElement(element, control)
         parent.insertBefore(node = element, child = after.nextSibling)
+        return element
+    }
+
+    suspend fun <T : HTMLElement> addAfterAndStart(
+        element: T,
+        after: HTMLElement,
+        control: (FlexItem.() -> Unit)? = null
+    ): T {
+        addAfter(
+            element = element,
+            after = after,
+            control = control
+        )
         if (started) {
             callStart(element)
         }
         return element
     }
 
-    suspend fun <T : HTMLElement> remove(element: T): T {
+    fun <T : HTMLElement> remove(element: T): T {
         val el = element
-        if (started) {
-            callStop(element)
-        }
         item(element).diatach()
         parent.removeChild(element)
         js("delete el.FLEX_ITEM")
+        return element
+    }
+
+    suspend fun <T : HTMLElement> removeAndStop(element: T): T {
+        if (started) {
+            callStop(element)
+        }
+        remove(element)
         return element
     }
 
