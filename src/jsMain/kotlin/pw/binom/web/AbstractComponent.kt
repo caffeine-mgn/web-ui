@@ -10,11 +10,6 @@ abstract class AbstractComponent<T : Element> : Component<T> {
         Component.setComponent(dom, this)
     }
 
-    init {
-        val self = this
-        window.setTimeout({ self.afterConstruct() }, 0)
-    }
-
     protected var isStarted = false
         private set
     private var firstStart = true
@@ -89,4 +84,16 @@ abstract class AbstractComponent<T : Element> : Component<T> {
 
     protected open suspend fun onInit() {
     }
+
+    /**
+     * Calls [func] and return result only if [isStarted] is `true`. Elso returns `null`
+     * @param func function for call only this component started
+     * @return result of [func] if component started. Also is `null`
+     */
+    protected inline fun <T> ifStarted(func: () -> T): T? =
+        if (isStarted) {
+            func()
+        } else {
+            null
+        }
 }
