@@ -1,6 +1,10 @@
 package pw.binom.web
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.w3c.dom.Element
+import kotlin.coroutines.suspendCoroutine
 
 abstract class AbstractPage<T : Element> : Page<T>, AbstractComponent<T>() {
     override suspend fun getTitle(): String? = null
@@ -36,10 +40,25 @@ abstract class AbstractPage<T : Element> : Page<T>, AbstractComponent<T>() {
         }
     }
 
-    private suspend fun callArgumentsUpdate(hash: String?) {
-        argumentUpdateListeners.forEach {
-            it(hash)
+    private var oldHash: String? = null
+    private var oldHashUpdateJob: Job? = null
+    private fun callArgumentsUpdate(hash: String?): Job? {
+        if (oldHash == hash) {
+            return null
         }
+        oldHash = hash
+        oldHashUpdateJob?.cancel()
+        val j = GlobalScope.launch {
+            try {
+                argumentUpdateListeners.forEach {
+                    it(hash)
+                }
+            } finally {
+                oldHashUpdateJob = null
+            }
+        }
+        oldHashUpdateJob = j
+        return j
     }
 
     protected fun onArgumentApply(func: suspend (String?) -> Unit): PageParamListener {
@@ -94,7 +113,7 @@ abstract class AbstractPage<T : Element> : Page<T>, AbstractComponent<T>() {
         }
         if (shouldCallArgumentsUpdate) {
             shouldCallArgumentsUpdate = false
-            callArgumentsUpdate(hash)
+            callArgumentsUpdate(hash)?.join()
         }
     }
 }

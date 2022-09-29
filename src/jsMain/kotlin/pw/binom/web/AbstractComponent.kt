@@ -96,4 +96,13 @@ abstract class AbstractComponent<T : Element> : Component<T> {
         } else {
             null
         }
+
+    protected fun job(): AutoCancelableJob {
+        val j = AutoCancelableJob()
+        onStop {
+            j.value?.cancel()
+            j.value = null
+        }
+        return j
+    }
 }

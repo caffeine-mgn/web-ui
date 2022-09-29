@@ -1,5 +1,6 @@
 package pw.binom
 
 object Versions {
-    val KOTLIN_VERSION = "1.7.10"
+    const val KOTLIN_VERSION = BuildConfig.KOTLIN_VERSION
+    const val KOTLINX_COROUTINES_VERSION = BuildConfig.KOTLINX_COROUTINES_VERSION
 }
