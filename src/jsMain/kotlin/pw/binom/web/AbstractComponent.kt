@@ -1,6 +1,5 @@
 package pw.binom.web
 
-import kotlinx.browser.window
 import org.w3c.dom.Element
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -8,6 +7,7 @@ import kotlin.reflect.KProperty
 abstract class AbstractComponent<T : Element> : Component<T> {
     protected fun afterConstruct() {
         Component.setComponent(dom, this)
+        dom.setAttribute("data-status", "unknown")
     }
 
     protected var isStarted = false
@@ -62,6 +62,7 @@ abstract class AbstractComponent<T : Element> : Component<T> {
     private val stopFunc = ArrayList<suspend () -> Unit>()
 
     override suspend fun onStart() {
+        dom.setAttribute("data-status", "started")
         isStarted = true
         if (firstStart) {
             firstStart = false
@@ -76,6 +77,7 @@ abstract class AbstractComponent<T : Element> : Component<T> {
     }
 
     override suspend fun onStop() {
+        dom.setAttribute("data-status", "stopped")
         stopFunc.forEach {
             it()
         }
