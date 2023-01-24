@@ -1,10 +1,10 @@
 package pw.binom.web
 
-class EventElement {
+class EventElement<T> {
 
-    private val listeners = ArrayList<suspend () -> Unit>()
+    private val listeners = ArrayList<suspend (T) -> Unit>()
 
-    fun on(f: suspend () -> Unit): Listener {
+    fun on(f: suspend (T) -> Unit): Listener {
         listeners.add(f)
         val closable = Listener {
             listeners.remove(f)
@@ -13,24 +13,24 @@ class EventElement {
         return closable
     }
 
-    suspend fun on2(f: suspend () -> Unit): Listener {
+    suspend fun on(value: T, f: suspend (T) -> Unit): Listener {
+        f(value)
         val listener = on(f)
-        f()
         return listener
     }
 
-    fun once(f: suspend () -> Unit): Listener {
+    fun once(f: suspend (T) -> Unit): Listener {
         var e: Listener? = null
         e = on {
-            f()
+            f(it)
             e!!.stopListen()
         }
         return e
     }
 
-    suspend fun dispatch() {
+    suspend fun dispatch(value: T) {
         for (f in listeners) {
-            f()
+            f(value)
         }
     }
 }
