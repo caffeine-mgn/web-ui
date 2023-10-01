@@ -1,24 +1,18 @@
 package pw.binom.web
 
-
 import kotlinx.browser.document
 import kotlinx.dom.addClass
 import kotlinx.dom.removeClass
-import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLDivElement
-import org.w3c.dom.HTMLHeadElement
-import pw.binom.web.AbstractComponent
-import pw.binom.web.Component
-
-
 
 object ViewStyles {
     const val COMPONENT_VIEW = "componentView"
-    const val COMPONENT_VIEW_CONTENT="componentViewContent"
+    const val COMPONENT_VIEW_CONTENT = "componentViewContent"
+
     init {
-        val style= document.createStyle()
-        style.innerHTML=""".$COMPONENT_VIEW{position:relative}.$COMPONENT_VIEW_CONTENT{width:100%;height:100%}"""
+        val style = document.createStyle()
+        style.innerHTML = """.$COMPONENT_VIEW{position:relative}.$COMPONENT_VIEW_CONTENT{width:100%;height:100%}"""
         document.getOrCreateHead().appendChild(style)
     }
 }

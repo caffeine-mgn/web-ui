@@ -7,12 +7,12 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.21")
     }
 }
 
 plugins {
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm") version "1.8.21"
     id("com.github.gmazzo.buildconfig") version "3.0.3"
 }
 
@@ -35,8 +35,7 @@ buildConfig {
 dependencies {
     api("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     api("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-//    api("org.jetbrains.dokka:dokka-gradle-plugin:1.7.0")
-    api("pw.binom:binom-publish:0.1.0")
+    api("pw.binom:binom-publish:0.1.8")
 }
 
 

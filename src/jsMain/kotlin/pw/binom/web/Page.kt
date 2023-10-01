@@ -1,9 +1,10 @@
 package pw.binom.web
 
 import org.w3c.dom.Element
+import pw.binom.property.MutableProperty
 
 interface Page<out T : Element> : Component<T>, Stage {
-    suspend fun getTitle(): String?
+    val property: MutableProperty<String?>
     suspend fun updateHash(value: String?)
     suspend fun updateParams(params: Map<String, String?>)
 

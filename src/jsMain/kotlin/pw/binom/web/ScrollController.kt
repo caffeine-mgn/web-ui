@@ -7,13 +7,13 @@ enum class ScrollType(val css: String) {
     VISIBLE("visible"),
     SCROLL("scroll"),
     NONE("hidden"),
-    INHERIT("inherit")
+    INHERIT("inherit"),
 }
 
 open class ScrollController<T : HTMLElement>(
     val dom: T,
     scrollX: ScrollType = ScrollType.AUTO,
-    scrollY: ScrollType = ScrollType.AUTO
+    scrollY: ScrollType = ScrollType.AUTO,
 ) {
 
     fun moveToEndV() {

@@ -22,25 +22,25 @@ allprojects {
 }
 
 kotlin {
-        if (jsRun) {
-            js("js") {
-                browser {
-                    testTask {
-                        useKarma {
-                            useFirefox()
+    if (jsRun) {
+        js("js") {
+            browser {
+                testTask {
+                    useKarma {
+                        useFirefox()
 //                        useFirefoxHeadless()
 //                        useChromium()
-                        }
                     }
                 }
-                binaries.executable()
             }
-        } else {
-            var applled = false
-            js(BOTH) {
-                browser()
-            }
+            binaries.executable()
         }
+    } else {
+        var applled = false
+        js(IR) {
+            browser()
+        }
+    }
 
     sourceSets {
         val commonMain by getting {

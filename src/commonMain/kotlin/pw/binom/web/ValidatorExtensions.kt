@@ -1,5 +1,8 @@
 package pw.binom.web
 
+import pw.binom.property.Property
+import pw.binom.property.SimpleProperty
+
 infix fun <T> Validator<T>.or(other: Validator<T>) = Validator<T> {
     this@or.valid(it) || other.valid(it)
 }

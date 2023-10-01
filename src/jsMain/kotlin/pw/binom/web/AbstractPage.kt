@@ -4,14 +4,20 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.w3c.dom.Element
-import kotlin.coroutines.suspendCoroutine
+import pw.binom.property.Property
+import pw.binom.property.SimpleMutableProperty
+import pw.binom.property.SimpleProperty
 
 abstract class AbstractPage<T : Element> : Page<T>, AbstractComponent<T>() {
-    override suspend fun getTitle(): String? = null
+    override val property = SimpleMutableProperty<String?>(null)
     private var params: Map<String, String?> = emptyMap()
     private var hash: String? = null
     private var shouldCallParamUpdate = true
     private var shouldCallArgumentsUpdate = true
+    private val paramsProperties = HashMap<String, SimpleProperty<String?>>()
+
+    protected fun paramProperty(name: String): Property<String?> =
+        paramsProperties.getOrPut(name) { SimpleProperty(null, onlyOnChanged = true) }
 
     override suspend fun updateHash(value: String?) {
         this.hash = value
@@ -23,6 +29,9 @@ abstract class AbstractPage<T : Element> : Page<T>, AbstractComponent<T>() {
     }
 
     override suspend fun updateParams(params: Map<String, String?>) {
+        params.forEach {
+            paramsProperties[it.key]?.updateValue(it.value)
+        }
         this.params = params
         if (isStarted) {
             callParamUpdate(params)

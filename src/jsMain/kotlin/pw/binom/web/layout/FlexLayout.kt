@@ -7,32 +7,33 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.css.CSSStyleDeclaration
 import org.w3c.dom.get
 import pw.binom.web.Component
-import pw.binom.web.FlexDiv2
 
 class FlexLayout<T : HTMLElement>(
     parent: T,
     direction: Direction = Direction.Row,
     alignItems: AlignItems = AlignItems.Stretch,
-    justifyContent: JustifyContent = JustifyContent.Start
+    justifyContent: JustifyContent = JustifyContent.Start,
 ) : SimpleLayout<T>(parent), Component<T> {
 
     constructor(
         controller: Component<T>,
         direction: Direction = Direction.Row,
         alignItems: AlignItems = AlignItems.Stretch,
-        justifyContent: JustifyContent = JustifyContent.Start
+        justifyContent: JustifyContent = JustifyContent.Start,
     ) : this(
         parent = controller.dom,
         direction = direction,
         alignItems = alignItems,
-        justifyContent = justifyContent
+        justifyContent = justifyContent,
     )
 
     private var started = false
+    val isStarted
+        get() = started
 
     override suspend fun onStart() {
-        Component.callOnStart(dom)
         started = true
+        Component.callOnStart(dom)
     }
 
     override suspend fun onStop() {
@@ -180,13 +181,13 @@ class FlexLayout<T : HTMLElement>(
         }
 
     private suspend fun callStart(element: Element) {
-        val com = element.asDynamic().CONTROL ?: return
+        val com = element.asDynamic().COMPONENT ?: return
         if (com !is Component<*>) return
         com.onStart()
     }
 
     private suspend fun callStop(element: Element) {
-        val com = element.asDynamic().CONTROL ?: return
+        val com = element.asDynamic().COMPONENT ?: return
         if (com !is Component<*>) return
         com.onStop()
     }
@@ -208,7 +209,7 @@ class FlexLayout<T : HTMLElement>(
     fun <T : HTMLElement> addBefore(
         element: T,
         before: HTMLElement,
-        control: (FlexItem.() -> Unit)? = null
+        control: (FlexItem.() -> Unit)? = null,
     ): T {
         prepareElement(element, control)
         parent.insertBefore(node = element, child = before)
@@ -218,12 +219,12 @@ class FlexLayout<T : HTMLElement>(
     suspend fun <T : HTMLElement> addBeforeAndStart(
         element: T,
         before: HTMLElement,
-        control: (FlexItem.() -> Unit)? = null
+        control: (FlexItem.() -> Unit)? = null,
     ): T {
         addBefore(
             element = element,
             before = before,
-            control = control
+            control = control,
         )
         if (started) {
             callStart(element)
@@ -240,12 +241,12 @@ class FlexLayout<T : HTMLElement>(
     suspend fun <T : HTMLElement> addAfterAndStart(
         element: T,
         after: HTMLElement,
-        control: (FlexItem.() -> Unit)? = null
+        control: (FlexItem.() -> Unit)? = null,
     ): T {
         addAfter(
             element = element,
             after = after,
-            control = control
+            control = control,
         )
         if (started) {
             callStart(element)
@@ -287,7 +288,7 @@ class FlexLayout<T : HTMLElement>(
 
     enum class AlignContent(val css: String) {
         Start("flex-start"), End("flex-end"), Center("center"), SpaceBetween("space-between"), SpaceAround("space-around"), Stretch(
-            "stretch"
+            "stretch",
         )
     }
 
@@ -352,7 +353,7 @@ class FlexLayout<T : HTMLElement>(
 
         enum class AlignSelf(val css: String) {
             Auto("auto"), Start("flex-start"), End("flex-end"), Center("center"), Baseline("baseline"), Stretch("stretch"), Normal(
-                "normal"
+                "normal",
             )
         }
     }
